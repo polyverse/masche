@@ -55,6 +55,20 @@ func nextReadableMemoryRegion(p process.Process, address uintptr) (region Memory
 			continue
 		}
 
+                // Check if memory is executable
+                if items[1][2] == '-' {
+
+                        // If we were already reading a region this will just finish it. We only report the softerror when we
+                        // were actually trying to read it.
+                        if region.Address != 0 {
+                                return region, nil, softerrors
+                        }
+
+                        softerrors = append(softerrors, fmt.Errorf("Non-executable memory %s", items[0]))
+                        continue
+                }
+
+
 		size := uint(end - start)
 
 		// Begenning of a region
