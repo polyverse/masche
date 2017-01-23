@@ -13,9 +13,9 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/mozilla/masche/memaccess"
-	"github.com/mozilla/masche/memsearch"
-	"github.com/mozilla/masche/process"
+	"github.com/polyverse-security/masche/memaccess"
+	"github.com/polyverse-security/masche/memsearch"
+	"github.com/polyverse-security/masche/process"
 )
 
 var (

@@ -3,8 +3,8 @@ package memaccess
 import (
 	"bufio"
 	"fmt"
-	"github.com/mozilla/masche/common"
-	"github.com/mozilla/masche/process"
+	"github.com/polyverse-security/masche/common"
+	"github.com/polyverse-security/masche/process"
 	"os"
 )
 

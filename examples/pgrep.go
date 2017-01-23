@@ -5,7 +5,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/mozilla/masche/process"
+	"github.com/polyverse-security/masche/process"
 	"log"
 	"regexp"
 )

@@ -2,8 +2,8 @@ package memaccess
 
 import (
 	"fmt"
-	"github.com/mozilla/masche/process"
-	"github.com/mozilla/masche/test"
+	"github.com/polyverse-security/masche/process"
+	"github.com/polyverse-security/masche/test"
 	"os"
 	"testing"
 )

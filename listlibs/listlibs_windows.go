@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"unsafe"
 
-	"github.com/mozilla/masche/process"
+	"github.com/polyverse-security/masche/process"
 )
 
 // #cgo CFLAGS: -std=c99

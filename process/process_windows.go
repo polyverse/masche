@@ -12,7 +12,7 @@ import (
 	"reflect"
 	"unsafe"
 
-	"github.com/mozilla/masche/cresponse"
+	"github.com/polyverse-security/masche/cresponse"
 )
 
 func (p process) Name() (name string, harderror error, softerrors []error) {

@@ -3,7 +3,7 @@ package listlibs
 import (
 	"regexp"
 
-	"github.com/mozilla/masche/process"
+	"github.com/polyverse-security/masche/process"
 )
 
 // ListLoadedLibraries lists all the libraries (their absolute paths) loaded by a process.

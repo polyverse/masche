@@ -3,7 +3,7 @@ package memaccess
 
 import (
 	"fmt"
-	"github.com/mozilla/masche/process"
+	"github.com/polyverse-security/masche/process"
 )
 
 // MemoryRegion represents a region of readable contiguos memory of a process.

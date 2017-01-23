@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/mozilla/masche/test"
+	"github.com/polyverse-security/masche/test"
 )
 
 func TestOpenFromPid(t *testing.T) {
