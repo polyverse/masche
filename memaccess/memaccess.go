@@ -23,7 +23,7 @@ type MemoryRegion struct {
 	Address uintptr
 	Size    uint
 	Access	Access
-	Name	string
+	Kind	string
 }
 
 func (m MemoryRegion) String() string {
@@ -38,6 +38,22 @@ var NoRegionAvailable MemoryRegion
 // If there aren't more regions available the special value NoRegionAvailable is returned.
 func NextMemoryRegion(p process.Process, address uintptr) (region MemoryRegion, harderror error, softerrors []error) {
 	return nextMemoryRegion(p, address)
+}
+
+// NextMemoryRegionAccess returns the next memory region at or after address at least the given access
+//
+// If there aren't more regions available the special value NoRegionAvailable is returned.
+func NextMemoryRegionAccess(p process.Process, address uintptr, access Access) (region MemoryRegion, harderror error, softerrors []error) {
+	region, harderror, softerrors = NextMemoryRegion(p, address)
+	if ((harderror != nil) || (region == NoRegionAvailable)) {
+		return NoRegionAvailable, harderror, softerrors
+	}
+
+	if (region.Access & access) != access {
+		return NextMemoryRegionAccess(p, region.Address + uintptr(region.Size), access)
+	}
+
+	return region, harderror, softerrors
 }
 
 // NextReadableMemoryRegion returns a memory region containing address, or the next readable region after address in

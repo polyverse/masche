@@ -40,7 +40,7 @@ func nextMemoryRegion(p process.Process, address uintptr) (region MemoryRegion, 
 		if items[1][0] != '-' {access += Readable}
 		if items[1][1] != '-' {access += Writable}
 		if items[1][2] != '-' {access += Executable}
-		return MemoryRegion{Address: start, Size: uint(end - start), Access: access, Name: items[5]}, nil, softerrors
+		return MemoryRegion{Address: start, Size: uint(end - start), Access: access, Kind: items[5]}, nil, softerrors
 	}
 
 	return NoRegionAvailable, nil, softerrors

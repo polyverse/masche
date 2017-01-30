@@ -29,7 +29,7 @@ func nextMemoryRegion(p process.Process, address uintptr) (region MemoryRegion, 
 		return NoRegionAvailable, harderror, softerrors
 	}
 
-	return MemoryRegion{uintptr(cRegion.start_address), uint(cRegion.length), Readable, ""}, harderror, softerrors
+	return MemoryRegion{uintptr(cRegion.start_address), uint(cRegion.length), Access(cRegion.access), C.GoString(cRegion.kind)}, harderror, softerrors
 }
 
 func nextReadableMemoryRegion(p process.Process, address uintptr) (region MemoryRegion, harderror error, softerrors []error) {
