@@ -29,6 +29,10 @@ typedef struct {
     size_t length;
 } memory_region_t;
 
+response_t *get_next_memory_region(process_handle_t handle,
+        memory_address_t address, bool *region_available,
+        memory_region_t *memory_region);
+
 /**
  * Returns a memory region containing address, or the next readable region
  * after address in case addresss is not in a readable region.

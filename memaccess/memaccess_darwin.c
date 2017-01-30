@@ -5,6 +5,50 @@
 
 #include "memaccess.h"
 
+response_t *get_next_memory_region(process_handle_t handle,
+        memory_address_t address, bool *region_available,
+        memory_region_t *memory_region) {
+	return get_next_readable_memory_region(handle, address, region_available, memory_region);
+/*
+    response_t *response = response_create();
+
+    kern_return_t kret;
+    struct vm_region_submap_info_64 info;
+    mach_msg_type_number_t info_count = 0;
+    mach_vm_address_t addr = address;
+    mach_vm_size_t size = 0;
+    uint32_t depth = 0;
+    *region_available = false;
+
+    for (;;) {
+        info_count = VM_REGION_SUBMAP_INFO_COUNT_64;
+        kret = mach_vm_region_recurse(handle, &addr, &size, &depth, (vm_region_recurse_info_t)&info, &info_count);
+
+        if (kret == KERN_INVALID_ADDRESS) {
+            break;
+        }
+
+        if (kret != KERN_SUCCESS) {
+            response_set_fatal_from_kret(response, kret);
+            return response;
+        }
+
+        if(info.is_submap) {
+            depth += 1;
+            continue;
+        }
+
+	*region_available = true;
+	memory_region->start_address = addr;
+	memory_region->length = size;
+
+        addr += size;
+    }
+
+    return response;
+*/
+}
+
 response_t *get_next_readable_memory_region(process_handle_t handle,
         memory_address_t address, bool *region_available,
         memory_region_t *memory_region) {
@@ -20,8 +64,7 @@ response_t *get_next_readable_memory_region(process_handle_t handle,
 
     for (;;) {
         info_count = VM_REGION_SUBMAP_INFO_COUNT_64;
-        kret = mach_vm_region_recurse(handle, &addr, &size, &depth,
-                (vm_region_recurse_info_t)&info, &info_count);
+        kret = mach_vm_region_recurse(handle, &addr, &size, &depth, (vm_region_recurse_info_t)&info, &info_count);
 
         if (kret == KERN_INVALID_ADDRESS) {
             break;

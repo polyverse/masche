@@ -8,6 +8,45 @@ import (
 	"os"
 )
 
+func nextMemoryRegion(p process.Process, address uintptr) (region MemoryRegion, harderror error, softerrors []error) {
+
+	mapsFile, harderror := os.Open(common.MapsFilePathFromPid(p.Pid()))
+	if harderror != nil {
+		return
+	}
+	defer mapsFile.Close()
+
+	region = MemoryRegion{}
+	scanner := bufio.NewScanner(mapsFile)
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		items := common.SplitMapsFileEntry(line)
+
+		if len(items) != 6 {
+			return region, fmt.Errorf("Unrecognised maps line: %s", line), softerrors
+		}
+
+		start, end, err := common.ParseMapsFileMemoryLimits(items[0])
+		if err != nil {
+			return region, err, softerrors
+		}
+
+		if end <= address {
+			continue
+		}
+
+		access := None
+		if items[1][0] != '-' {access += Readable}
+		if items[1][1] != '-' {access += Writable}
+		if items[1][2] != '-' {access += Executable}
+		if items[1][3] != '-' {access += Shared}
+		return MemoryRegion{Address: start, Size: uint(end - start), Access: access}, nil, softerrors
+	}
+
+	return NoRegionAvailable, nil, softerrors
+}
+
 func nextReadableMemoryRegion(p process.Process, address uintptr) (region MemoryRegion, harderror error,
 	softerrors []error) {
 

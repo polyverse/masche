@@ -6,6 +6,16 @@ import (
 	"github.com/polyverse-security/masche/process"
 )
 
+type Access uint8
+
+const (  
+	None Access = 0 << iota
+	Readable 
+	Writable
+	Executable
+	Shared
+)
+
 // MemoryRegion represents a region of readable contiguos memory of a process.
 // No readable memory can be available right next to this region, it's maximal in its upper bound.
 //
@@ -13,6 +23,7 @@ import (
 type MemoryRegion struct {
 	Address uintptr
 	Size    uint
+	Access	Access
 }
 
 func (m MemoryRegion) String() string {
@@ -22,12 +33,18 @@ func (m MemoryRegion) String() string {
 // A centinel value indicating that there is no more regions available.
 var NoRegionAvailable MemoryRegion
 
+// NextMemoryRegion returns the next memory region at or after address
+//
+// If there aren't more regions available the special value NoRegionAvailable is returned.
+func NextMemoryRegion(p process.Process, address uintptr) (region MemoryRegion, harderror error, softerrors []error) {
+	return nextMemoryRegion(p, address)
+}
+
 // NextReadableMemoryRegion returns a memory region containing address, or the next readable region after address in
 // case addresss is not in a readable region.
 //
 // If there aren't more regions available the special value NoRegionAvailable is returned.
-func NextReadableMemoryRegion(p process.Process, address uintptr) (region MemoryRegion, harderror error,
-	softerrors []error) {
+func NextReadableMemoryRegion(p process.Process, address uintptr) (region MemoryRegion, harderror error, softerrors []error) {
 	return nextReadableMemoryRegion(p, address)
 }
 
