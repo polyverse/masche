@@ -29,7 +29,7 @@ func nextMemoryRegion(p process.Process, address uintptr) (region MemoryRegion, 
 		return NoRegionAvailable, harderror, softerrors
 	}
 
-	return MemoryRegion{uintptr(cRegion.start_address), uint(cRegion.length),Readable}, harderror, softerrors
+	return MemoryRegion{uintptr(cRegion.start_address), uint(cRegion.length), Readable, ""}, harderror, softerrors
 }
 
 func nextReadableMemoryRegion(p process.Process, address uintptr) (region MemoryRegion, harderror error, softerrors []error) {
@@ -48,7 +48,7 @@ func nextReadableMemoryRegion(p process.Process, address uintptr) (region Memory
 		return NoRegionAvailable, harderror, softerrors
 	}
 
-	return MemoryRegion{uintptr(cRegion.start_address), uint(cRegion.length),Readable}, harderror, softerrors
+	return MemoryRegion{uintptr(cRegion.start_address), uint(cRegion.length), Readable, ""}, harderror, softerrors
 }
 
 func copyMemory(p process.Process, address uintptr, buffer []byte) (harderror error, softerrors []error) {

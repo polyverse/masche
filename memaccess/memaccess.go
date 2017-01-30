@@ -9,11 +9,10 @@ import (
 type Access uint8
 
 const (  
-	None Access = 0 << iota
-	Readable 
-	Writable
-	Executable
-	Shared
+	None Access = 0
+	Readable = 1 
+	Writable = 2
+	Executable = 4
 )
 
 // MemoryRegion represents a region of readable contiguos memory of a process.
@@ -24,6 +23,7 @@ type MemoryRegion struct {
 	Address uintptr
 	Size    uint
 	Access	Access
+	Name	string
 }
 
 func (m MemoryRegion) String() string {
