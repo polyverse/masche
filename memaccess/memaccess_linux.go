@@ -32,6 +32,11 @@ func nextMemoryRegion(p process.Process, address uintptr) (region MemoryRegion, 
 			return region, err, softerrors
 		}
 
+		// Skip vsyscall as it can't be read. It's a special page mapped by the kernel to accelerate some syscalls.
+		if items[5] == "[vsyscall]" {
+			continue
+		}
+
 		if end <= address {
 			continue
 		}
