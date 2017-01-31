@@ -190,7 +190,7 @@ response_t *get_next_readable_memory_region(process_handle_t handle,
             continue;
         }
 
-        if (((info.protection & VM_PROT_READ) != VM_PROT_READ) || ((info.protection & VM_PROT_EXECUTE) != VM_PROT_EXECUTE)) {
+        if ((info.protection & VM_PROT_READ) != VM_PROT_READ) {
             if (*region_available) {
                 return response;
             }
@@ -198,7 +198,7 @@ response_t *get_next_readable_memory_region(process_handle_t handle,
             char *description = NULL;
             asprintf(
                 &description,
-                "memory not executable or unreadable: %llx-%llx",
+                "memory unreadable: %llx-%llx",
                 addr,
                 addr + size - 1
             );
