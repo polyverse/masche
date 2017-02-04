@@ -55,7 +55,7 @@ func NextMemoryRegionAccess(p process.Process, address uintptr, access Access) (
 	}
 
 	if (region.Access & access) != access {
-		return NextMemoryRegionAccess(p, region.Address + uintptr(region.Size), access)
+		region, harderror, softerrors = NextMemoryRegionAccess(p, region.Address + uintptr(region.Size), access)
 	}
 
 	return region, harderror, softerrors
