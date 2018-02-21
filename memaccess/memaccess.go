@@ -4,7 +4,7 @@ package memaccess
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/polyverse-security/masche/process"
+	"github.com/polyverse/masche/process"
 	"strconv"
 )
 

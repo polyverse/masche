@@ -5,7 +5,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/polyverse-security/masche/process"
+	"github.com/polyverse/masche/process"
 	"log"
 	"regexp"
 )

@@ -3,8 +3,8 @@ package listlibs
 import (
 	"bufio"
 	"fmt"
-	"github.com/polyverse-security/masche/common"
-	"github.com/polyverse-security/masche/process"
+	"github.com/polyverse/masche/common"
+	"github.com/polyverse/masche/process"
 	"os"
 )
 

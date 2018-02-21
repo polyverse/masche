@@ -8,8 +8,8 @@ import "C"
 
 import (
 	"fmt"
-	"github.com/polyverse-security/masche/cresponse"
-	"github.com/polyverse-security/masche/process"
+	"github.com/polyverse/masche/cresponse"
+	"github.com/polyverse/masche/process"
 	"unsafe"
 )
 
