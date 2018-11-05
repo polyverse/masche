@@ -10,12 +10,12 @@ import (
 
 type Access uint8
 
-const (  
-	None Access = 0
-	Readable = 1 
-	Writable = 2
-	Executable = 4
-	Free = 128
+const (
+	None       Access = 0
+	Readable          = 1
+	Writable          = 2
+	Executable        = 4
+	Free              = 128
 )
 
 func (a Access) String() string {
@@ -53,8 +53,8 @@ func (a Access) String() string {
 type MemoryRegion struct {
 	Address uintptr `json:"address"`
 	Size    uint    `json:"size"`
-	Access	Access  `json:"access"`
-	Kind	string  `json:"kind"`
+	Access  Access  `json:"access"`
+	Kind    string  `json:"kind"`
 }
 
 func (m MemoryRegion) String() string {
@@ -62,18 +62,18 @@ func (m MemoryRegion) String() string {
 }
 
 func (mr *MemoryRegion) MarshalJSON() ([]byte, error) {
-        type Alias MemoryRegion
-        return json.Marshal(&struct {
-                Address string `json:"address"`
+	type Alias MemoryRegion
+	return json.Marshal(&struct {
+		Address string `json:"address"`
 		Size    string `json:"size"`
 		Access  string `json:"access"`
-                *Alias
-        }{
-                Address: "0x" + strconv.FormatUint(uint64(mr.Address), 16),
-                Size   : "0x" + strconv.FormatUint(uint64(mr.Size), 16),
+		*Alias
+	}{
+		Address: "0x" + strconv.FormatUint(uint64(mr.Address), 16),
+		Size:    "0x" + strconv.FormatUint(uint64(mr.Size), 16),
 		Access:  mr.Access.String(),
-                Alias:   (*Alias)(mr),
-        })
+		Alias:   (*Alias)(mr),
+	})
 }
 
 // A sentinel value indicating that there is no more regions available.
@@ -91,12 +91,12 @@ func NextMemoryRegion(p process.Process, address uintptr) (region MemoryRegion, 
 // If there aren't more regions available the special value NoRegionAvailable is returned.
 func NextMemoryRegionAccess(p process.Process, address uintptr, access Access) (region MemoryRegion, harderror error, softerrors []error) {
 	region, harderror, softerrors = NextMemoryRegion(p, address)
-	if ((harderror != nil) || (region == NoRegionAvailable)) {
+	if (harderror != nil) || (region == NoRegionAvailable) {
 		return NoRegionAvailable, harderror, softerrors
 	}
 
 	if (region.Access & access) != access {
-		region, harderror, softerrors = NextMemoryRegionAccess(p, region.Address + uintptr(region.Size), access)
+		region, harderror, softerrors = NextMemoryRegionAccess(p, region.Address+uintptr(region.Size), access)
 	}
 
 	return region, harderror, softerrors
@@ -109,9 +109,9 @@ func NextMemoryRegionAccess(p process.Process, address uintptr, access Access) (
 func NextReadableMemoryRegion(p process.Process, address uintptr) (region MemoryRegion, harderror error, softerrors []error) {
 	r1, h1, s1 := NextMemoryRegionAccess(p, address, Readable)
 	for {
-		r2, h2, _ := NextMemoryRegionAccess(p, r1.Address + uintptr(r1.Size), Readable)
-		if (h2 != nil) || (r2 == NoRegionAvailable) || (r2.Address > r1.Address + uintptr(r1.Size)) {
-			break;
+		r2, h2, _ := NextMemoryRegionAccess(p, r1.Address+uintptr(r1.Size), Readable)
+		if (h2 != nil) || (r2 == NoRegionAvailable) || (r2.Address > r1.Address+uintptr(r1.Size)) {
+			break
 		} // if
 
 		r1.Size += r2.Size

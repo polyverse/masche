@@ -12,13 +12,13 @@ import (
 	"strings"
 )
 
-type proc int
+type LinuxProcess int
 
-func (p proc) Pid() int {
+func (p LinuxProcess) Pid() int {
 	return int(p)
 }
 
-func (p proc) Name() (name string, harderror error, softerrors []error) {
+func (p LinuxProcess) Name() (name string, harderror error, softerrors []error) {
 	exePath := filepath.Join("/proc", fmt.Sprintf("%d", p.Pid()), "exe")
 	name, err := filepath.EvalSymlinks(exePath)
 
@@ -32,6 +32,7 @@ func (p proc) Name() (name string, harderror error, softerrors []error) {
 		if err != nil {
 			return name, err, nil
 		}
+		defer statusFile.Close()
 
 		r := bufio.NewReader(statusFile)
 		for line, _, err := r.ReadLine(); err != io.EOF; line, _, err = r.ReadLine() {
@@ -54,11 +55,11 @@ func (p proc) Name() (name string, harderror error, softerrors []error) {
 	return name, err, nil
 }
 
-func (p proc) Close() (harderror error, softerrors []error) {
+func (p LinuxProcess) Close() (harderror error, softerrors []error) {
 	return nil, nil
 }
 
-func (p proc) Handle() uintptr {
+func (p LinuxProcess) Handle() uintptr {
 	return uintptr(p)
 }
 
@@ -91,5 +92,5 @@ func openFromPid(pid int) (p Process, harderror error, softerrors []error) {
 	}
 	defer memFile.Close()
 
-	return proc(pid), nil, nil
+	return LinuxProcess(pid), nil, nil
 }

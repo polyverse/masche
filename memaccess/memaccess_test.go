@@ -17,7 +17,7 @@ func roy0(t *testing.T, proc process.Process) {
 		t.Fatal(lookErr)
 	}
 
-	cmdArgs := []string {"-w", "-v", "-interleaved", strconv.Itoa(int(proc.Pid()))}
+	cmdArgs := []string{"-w", "-v", "-interleaved", strconv.Itoa(int(proc.Pid()))}
 
 	cmd := exec.Command(cmdName, cmdArgs...)
 	cmdReader, err := cmd.StdoutPipe()
@@ -75,14 +75,14 @@ func roy(t *testing.T, proc process.Process) {
 }
 
 func TestManuallyWalk(t *testing.T) {
-fmt.Println("TestManuallyWalk: Enter\n")
+	fmt.Println("TestManuallyWalk: Enter\n")
 	cmd, err := test.LaunchTestCase()
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer cmd.Process.Kill()
 
-	pid :=  int(cmd.Process.Pid)
+	pid := int(cmd.Process.Pid)
 	proc, err, softerrors := process.OpenFromPid(pid)
 	test.PrintSoftErrors(softerrors)
 	if err != nil {
@@ -116,7 +116,7 @@ fmt.Println("TestManuallyWalk: Enter\n")
 
 		previousRegion = region
 	}
-fmt.Println("TestManuallyWalk: Exit\n")
+	fmt.Println("TestManuallyWalk: Exit\n")
 }
 
 func TestCopyMemory(t *testing.T) {
@@ -126,7 +126,7 @@ func TestCopyMemory(t *testing.T) {
 	}
 	defer cmd.Process.Kill()
 
-	pid :=  int(cmd.Process.Pid)
+	pid := int(cmd.Process.Pid)
 	proc, err, softerrors := process.OpenFromPid(pid)
 	test.PrintSoftErrors(softerrors)
 	if err != nil {
@@ -212,7 +212,7 @@ func TestWalkMemoryDoesntOverlapTheBuffer(t *testing.T) {
 	}
 	defer cmd.Process.Kill()
 
-	pid :=  int(cmd.Process.Pid)
+	pid := int(cmd.Process.Pid)
 	proc, err, softerrors := process.OpenFromPid(pid)
 	test.PrintSoftErrors(softerrors)
 	if err != nil {
@@ -248,7 +248,7 @@ func TestWalkRegionReadsEntireRegion(t *testing.T) {
 	}
 	defer cmd.Process.Kill()
 
-	pid :=  int(cmd.Process.Pid)
+	pid := int(cmd.Process.Pid)
 	proc, err, softerrors := process.OpenFromPid(pid)
 	test.PrintSoftErrors(softerrors)
 	if err != nil {
@@ -322,7 +322,7 @@ func TestSlidingWalkMemory(t *testing.T) {
 	}
 	defer cmd.Process.Kill()
 
-	pid :=  int(cmd.Process.Pid)
+	pid := int(cmd.Process.Pid)
 	proc, err, softerrors := process.OpenFromPid(pid)
 	test.PrintSoftErrors(softerrors)
 	if err != nil {

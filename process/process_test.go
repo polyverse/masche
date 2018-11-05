@@ -1,6 +1,7 @@
 package process
 
 import (
+	"fmt"
 	"regexp"
 	"testing"
 
@@ -75,4 +76,36 @@ func TestOpenByName(t *testing.T) {
 			t.Error("Expected name", test.GetTestCasePath(), "and got", name)
 		}
 	}
+}
+
+func TestDeprecatedProcessInfo(t *testing.T) {
+	cmd, err := test.LaunchTestCase()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer cmd.Process.Kill()
+
+	pid := int(cmd.Process.Pid)
+	procInfo, errs := deprecatedCommandLineProcessInfo(pid)
+	if len(errs) > 0 {
+		t.Fatalf("Errors when calling ProcInfo: %v", errs)
+	}
+
+	fmt.Printf("ProcessInfo: %+v\n", procInfo)
+}
+
+func TestProcessInfo(t *testing.T) {
+	cmd, err := test.LaunchTestCase()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer cmd.Process.Kill()
+
+	pid := int(cmd.Process.Pid)
+	procInfo, err := ProcessInfo(pid)
+	if err != nil {
+		t.Fatalf("Error when calling ProcInfo: %v", err)
+	}
+
+	fmt.Printf("ProcessInfo: %+v\n", procInfo)
 }
