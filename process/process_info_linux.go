@@ -7,7 +7,6 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"reflect"
 	"strconv"
@@ -23,8 +22,7 @@ type LinuxProcessInfo struct {
 	GroupId         int    `json:"groupId" statusFileKey:"Gid"`
 	GroupName       string `json:"groupName" statusFileKey:""`
 	ParentProcessId int    `json:"parentProcessId" statusFileKey:"PPid"`
-	ThreadId        int    `json:"threadId" statusFileKey:""`
-	SessionId       int    `json:"sessionId" statusFileKey:""`
+	Executable      string `json:"executable"`
 }
 
 var (
@@ -48,7 +46,26 @@ func ProcessInfo(pid int) (*LinuxProcessInfo, error) {
 
 	lpi := &LinuxProcessInfo{}
 	err = parseStatusToStruct(data, lpi)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to process data from %s into LinuxProcessInfo struct (%v)", statusPath, err)
+	}
+
+	//we ignore this error
+	lpi.Executable, err = ProcessExe(pid)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "[Warning] Error when expanding symlink to executable: %v\n", err)
+	}
+
 	return lpi, err
+}
+
+func ProcessExe(pid int) (string, error) {
+	exePath := filepath.Join("/proc", fmt.Sprintf("%d", pid), "exe")
+	name, err := filepath.EvalSymlinks(exePath)
+	if err != nil {
+		return "", fmt.Errorf("Unable to expand process executable symlink %s (%v)", exePath, err)
+	}
+	return name, nil
 }
 
 func parseStatusToStruct(data []byte, lpi *LinuxProcessInfo) error {
@@ -130,70 +147,6 @@ func getFieldNameForKey(key string) string {
 	defer mtx.Unlock()
 	keyToFieldName[key] = fieldForKey.Name
 	return keyToFieldName[key]
-}
-
-// DEPRECATED
-func deprecatedCommandLineProcessInfo(pid int) (*LinuxProcessInfo, []error) {
-	errs := []error{}
-
-	command, err := attributeByPid(pid, "comm")
-	errs = appendError(errs, err, "Unable to get attribute comm for Pid %d", pid)
-
-	userid, err := intAttributeByPid(pid, "uid")
-	errs = appendError(errs, err, "Unable to get attribute uid for Pid %d", pid)
-
-	username, err := attributeByPid(pid, "user")
-	errs = appendError(errs, err, "Unable to get attribute user for Pid %d", pid)
-
-	groupId, err := intAttributeByPid(pid, "gid")
-	errs = appendError(errs, err, "Unable to get attribute gid for Pid %d", pid)
-
-	groupName, err := attributeByPid(pid, "group")
-	errs = appendError(errs, err, "Unable to get attribute group for Pid %d", pid)
-
-	parentProcessId, err := intAttributeByPid(pid, "ppid")
-	errs = appendError(errs, err, "Unable to get attribute ppid for Pid %d", pid)
-
-	threadId, err := intAttributeByPid(pid, "tid")
-	errs = appendError(errs, err, "Unable to get attribute tid for Pid %d", pid)
-
-	sessionId, err := intAttributeByPid(pid, "sid")
-	errs = appendError(errs, err, "Unable to get attribute sid for Pid %d", pid)
-
-	return &LinuxProcessInfo{
-		Id:              pid,
-		Command:         command,
-		UserId:          userid,
-		UserName:        username,
-		GroupId:         groupId,
-		GroupName:       groupName,
-		ParentProcessId: parentProcessId,
-		ThreadId:        threadId,
-		SessionId:       sessionId,
-	}, errs
-}
-
-// TODO: Replace with non-command
-func attributeByPid(pid int, attribute string) (string, error) {
-	ret, err := exec.Command("ps", "-p", strconv.Itoa(pid), "-o", attribute+"=").Output()
-	if err != nil {
-		return "", fmt.Errorf("Unable to get process attribute %s for pid %d, by calling the 'ps' command. (%v)", attribute, pid, err)
-	}
-	return strings.Replace(string(ret), "\n", "", 1), nil
-}
-
-func intAttributeByPid(pid int, attribute string) (int, error) {
-	strVal, err := attributeByPid(pid, attribute)
-	if err != nil {
-		return 0, fmt.Errorf("Unable to get integer value of attribute %s for pid %d due to underlying error. (%v)", attribute, pid, err)
-	}
-
-	ret, err := strconv.Atoi(strings.TrimSpace(strVal))
-	if err != nil {
-		return 0, fmt.Errorf("Unable to parse integer from value %s of attribute %s for pid %d due to underlying error. (%v)", strVal, attribute, pid, err)
-	}
-
-	return ret, nil
 }
 
 func appendError(errs []error, err error, format string, params ...interface{}) []error {

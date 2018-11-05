@@ -19,8 +19,7 @@ func (p LinuxProcess) Pid() int {
 }
 
 func (p LinuxProcess) Name() (name string, harderror error, softerrors []error) {
-	exePath := filepath.Join("/proc", fmt.Sprintf("%d", p.Pid()), "exe")
-	name, err := filepath.EvalSymlinks(exePath)
+	name, err := ProcessExe(p.Pid())
 
 	if err != nil {
 		// If the exe link doesn't take us to the real path of the binary of the process maybe it's not present anymore
