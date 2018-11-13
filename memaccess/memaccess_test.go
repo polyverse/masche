@@ -75,7 +75,7 @@ func roy(t *testing.T, proc process.Process) {
 }
 
 func TestManuallyWalk(t *testing.T) {
-	fmt.Println("TestManuallyWalk: Enter\n")
+	fmt.Println("TestManuallyWalk: Enter")
 	cmd, err := test.LaunchTestCase()
 	if err != nil {
 		t.Fatal(err)
@@ -116,7 +116,7 @@ func TestManuallyWalk(t *testing.T) {
 
 		previousRegion = region
 	}
-	fmt.Println("TestManuallyWalk: Exit\n")
+	fmt.Println("TestManuallyWalk: Exit")
 }
 
 func TestCopyMemory(t *testing.T) {
@@ -148,7 +148,7 @@ func TestCopyMemory(t *testing.T) {
 
 	for region.Size < min_region_size {
 		if region == NoRegionAvailable {
-			t.Fatal("We couldn't find a region of %d bytes", min_region_size)
+			t.Fatalf("We couldn't find a region of %d bytes", min_region_size)
 		}
 
 		region, err, softerrors = NextReadableMemoryRegion(proc, region.Address+uintptr(region.Size))
@@ -272,7 +272,7 @@ func TestWalkRegionReadsEntireRegion(t *testing.T) {
 	min_region_size := bufferSizes[len(bufferSizes)-1]
 	for region.Size < min_region_size {
 		if region == NoRegionAvailable {
-			t.Fatal("We couldn't find a region of %d bytes", min_region_size)
+			t.Fatalf("We couldn't find a region of %d bytes", min_region_size)
 		}
 
 		region, err, softerrors = NextReadableMemoryRegion(proc, region.Address+uintptr(region.Size))
