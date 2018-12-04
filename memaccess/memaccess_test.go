@@ -83,7 +83,7 @@ func TestManuallyWalk(t *testing.T) {
 	defer cmd.Process.Kill()
 
 	pid := int(cmd.Process.Pid)
-	proc, err, softerrors := process.OpenFromPid(pid)
+	proc, err, softerrors := process.ProcessFromPid(pid)
 	test.PrintSoftErrors(softerrors)
 	if err != nil {
 		t.Fatal(err)
@@ -127,7 +127,7 @@ func TestCopyMemory(t *testing.T) {
 	defer cmd.Process.Kill()
 
 	pid := int(cmd.Process.Pid)
-	proc, err, softerrors := process.OpenFromPid(pid)
+	proc, err, softerrors := process.ProcessFromPid(pid)
 	test.PrintSoftErrors(softerrors)
 	if err != nil {
 		t.Fatal(err)
@@ -213,7 +213,7 @@ func TestWalkMemoryDoesntOverlapTheBuffer(t *testing.T) {
 	defer cmd.Process.Kill()
 
 	pid := int(cmd.Process.Pid)
-	proc, err, softerrors := process.OpenFromPid(pid)
+	proc, err, softerrors := process.ProcessFromPid(pid)
 	test.PrintSoftErrors(softerrors)
 	if err != nil {
 		t.Fatal(err)
@@ -249,7 +249,7 @@ func TestWalkRegionReadsEntireRegion(t *testing.T) {
 	defer cmd.Process.Kill()
 
 	pid := int(cmd.Process.Pid)
-	proc, err, softerrors := process.OpenFromPid(pid)
+	proc, err, softerrors := process.ProcessFromPid(pid)
 	test.PrintSoftErrors(softerrors)
 	if err != nil {
 		t.Fatal(err)
@@ -323,7 +323,7 @@ func TestSlidingWalkMemory(t *testing.T) {
 	defer cmd.Process.Kill()
 
 	pid := int(cmd.Process.Pid)
-	proc, err, softerrors := process.OpenFromPid(pid)
+	proc, err, softerrors := process.ProcessFromPid(pid)
 	test.PrintSoftErrors(softerrors)
 	if err != nil {
 		t.Fatal(err)

@@ -16,8 +16,7 @@ func TestOpenFromPid(t *testing.T) {
 	defer cmd.Process.Kill()
 
 	pid := int(cmd.Process.Pid)
-	proc, err, softerrors := OpenFromPid(pid)
-	defer proc.Close()
+	_, err, softerrors := ProcessFromPid(pid)
 	test.PrintSoftErrors(softerrors)
 	if err != nil {
 		t.Fatal(err)
@@ -32,8 +31,7 @@ func TestProcessName(t *testing.T) {
 	defer cmd.Process.Kill()
 
 	pid := int(cmd.Process.Pid)
-	proc, err, softerrors := OpenFromPid(pid)
-	defer proc.Close()
+	proc, err, softerrors := ProcessFromPid(pid)
 	test.PrintSoftErrors(softerrors)
 	if err != nil {
 		t.Fatal(err)
@@ -58,8 +56,7 @@ func TestOpenByName(t *testing.T) {
 	defer cmd.Process.Kill()
 
 	r := regexp.MustCompile("test[/\\\\]tools[/\\\\]test")
-	procs, err, softerrors := OpenByName(r)
-	defer CloseAll(procs)
+	procs, err, softerrors := ProcessesByName(r)
 	test.PrintSoftErrors(softerrors)
 	if len(procs) == 0 {
 		t.Error("The test case was launched and not opened.")
@@ -85,8 +82,12 @@ func TestProcessInfo(t *testing.T) {
 	}
 	defer cmd.Process.Kill()
 
-	pid := int(cmd.Process.Pid)
-	procInfo, err := ProcessInfo(pid)
+	proc, err, _ := ProcessFromPid(cmd.Process.Pid)
+	if err != nil {
+		t.Fatalf("Error when calling ProcessFromPid: %v", err)
+	}
+
+	procInfo, err := proc.Info()
 	if err != nil {
 		t.Fatalf("Error when calling ProcInfo: %v", err)
 	}

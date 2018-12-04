@@ -37,12 +37,11 @@ func TestSearchInOtherProcess(t *testing.T) {
 	defer cmd.Process.Kill()
 
 	pid := int(cmd.Process.Pid)
-	proc, err, softerrors := process.OpenFromPid(pid)
+	proc, err, softerrors := process.ProcessFromPid(pid)
 	test.PrintSoftErrors(softerrors)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer proc.Close()
 
 	for i, buf := range buffersToFind {
 		found, _, err, softerrors := FindBytesSequence(proc, 0, buf)
@@ -72,12 +71,11 @@ func TestRegexpSearchInOtherProcess(t *testing.T) {
 	defer cmd.Process.Kill()
 
 	pid := int(cmd.Process.Pid)
-	proc, err, softerrors := process.OpenFromPid(pid)
+	proc, err, softerrors := process.ProcessFromPid(pid)
 	test.PrintSoftErrors(softerrors)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer proc.Close()
 
 	for i, str := range regexpToMatch {
 		r, err := regexp.Compile(str)

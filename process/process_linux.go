@@ -12,13 +12,15 @@ import (
 	"strings"
 )
 
-type linuxProcess int
-
-func (p linuxProcess) Pid() int {
-	return int(p)
+type linuxProcess struct {
+	pid int
 }
 
-func (p linuxProcess) Name() (name string, harderror error, softerrors []error) {
+func (p *linuxProcess) Pid() int {
+	return p.pid
+}
+
+func (p *linuxProcess) Name() (name string, harderror error, softerrors []error) {
 	name, err := processExe(p.Pid())
 
 	if err != nil {
@@ -54,15 +56,11 @@ func (p linuxProcess) Name() (name string, harderror error, softerrors []error) 
 	return name, err, nil
 }
 
-func (p linuxProcess) Close() (harderror error, softerrors []error) {
-	return nil, nil
+func (p *linuxProcess) Handle() uintptr {
+	return uintptr(p.pid)
 }
 
-func (p linuxProcess) Handle() uintptr {
-	return uintptr(p)
-}
-
-func (p linuxProcess) Info() (ProcessInfo, error) {
+func (p *linuxProcess) Info() (ProcessInfo, error) {
 	statusPath := filepath.Join("/proc", fmt.Sprintf("%d", p), "status")
 	statusFile, err := os.Open(statusPath)
 	if err != nil {
@@ -90,23 +88,23 @@ func (p linuxProcess) Info() (ProcessInfo, error) {
 	return lpi, err
 }
 
-func getAllPids() (pids []int, harderror error, softerrors []error) {
+func getAllProcesses() ([]Process, error, []error) {
 	files, err := ioutil.ReadDir("/proc/")
 	if err != nil {
 		return nil, err, nil
 	}
 
-	pids = make([]int, 0)
+	procs := []Process{}
 
 	for _, f := range files {
 		pid, err := strconv.Atoi(f.Name())
 		if err != nil {
 			continue
 		}
-		pids = append(pids, int(pid))
+		procs = append(procs, &linuxProcess{pid: pid})
 	}
 
-	return pids, nil, nil
+	return procs, nil, nil
 }
 
 func processFromPid(pid int) (Process, error, []error) {
@@ -117,5 +115,5 @@ func processFromPid(pid int) (Process, error, []error) {
 		return nil, fmt.Errorf("Error when testing existence of process with pid %v", pid), nil
 	}
 
-	return linuxProcess(pid), nil, nil
+	return &linuxProcess{pid: pid}, nil, nil
 }

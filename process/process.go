@@ -4,9 +4,8 @@
 package process
 
 import (
-	"fmt"
+	"github.com/pkg/errors"
 	"regexp"
-	"sort"
 )
 
 // Process type represents a running processes that can be used by other modules.
@@ -22,6 +21,9 @@ type Process interface {
 	Info() (ProcessInfo, error)
 }
 
+type ProcessInfo interface {
+}
+
 // OpenFromPid opens a process by its pid.
 func ProcessFromPid(pid int) (Process, error, []error) {
 	// This function is implemented by the OS-specific openFromPid function.
@@ -33,31 +35,19 @@ func GetAllProcesses() ([]Process, error, []error) {
 	softerrors := []error{}
 
 	// This function is implemented by the OS-specific getAllPids function.
-	allPids, harderror1, softerrors1 := getAllPids()
+	allProcs, harderror1, softerrors1 := getAllProcesses()
 	softerrors = append(softerrors, softerrors1...)
 	if harderror1 != nil {
 		return nil, harderror1, softerrors
 	} // if
-	sort.Ints(allPids)
-
-	procs := []Process{}
-	for _, pid := range allPids {
-		proc, harderr2, softerrors2 := ProcessFromPid(pid)
-		softerrors = append(softerrors, softerrors2...)
-		softerrors = append(softerrors,
-			fmt.Errorf("Error occurred when getting Process from Pid %d: %v", pid, harderr2))
-
-		procs = append(procs, proc)
-	}
-
-	return procs, nil, softerrors
+	return allProcs, nil, softerrors
 }
 
 // OpenByName recieves a Regexp an returns a slice with all the Processes whose name matches it.
 func ProcessesByName(r *regexp.Regexp) (ps []Process, harderror error, softerrors []error) {
 	procs, harderror, softerrors := GetAllProcesses()
 	if harderror != nil {
-		return nil, fmt.Errorf("", harderror), nil
+		return nil, errors.Wrapf(harderror, "Unable to get Processes on this host"), nil
 	}
 
 	matchs := make([]Process, 0)
