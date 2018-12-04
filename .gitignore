@@ -32,3 +32,5 @@ Vagrantfile
 
 #Spotlight indices
 .DS_Store
+
+vendor/
