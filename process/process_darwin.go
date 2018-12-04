@@ -2,53 +2,137 @@ package process
 
 import "C"
 import (
-	"fmt"
-	"path/filepath"
-	"reflect"
+	"bytes"
+	"encoding/binary"
+	"github.com/pkg/errors"
+	"syscall"
 	"unsafe"
 )
 
-func (p process) Name() (name string, harderror error, softerrors []error) {
-	cname := C.malloc(C.PROC_PIDPATHINFO_MAXSIZE)
-	defer C.free(cname)
-
-	_, err := C.proc_pidpath(C.int(p.pid), cname, C.PROC_PIDPATHINFO_MAXSIZE)
-	if err != nil {
-		harderr := fmt.Errorf("Error while reading name of process %d: %v", p.pid, err)
-		return "", harderr, nil
-	}
-
-	name, harderror = filepath.EvalSymlinks(C.GoString((*C.char)(cname)))
-	return
+type darwinProcess struct {
+	pid    int
+	ppid   int
+	binary string
 }
 
-func getAllPids() (pids []int, harderror error, softerrors []error) {
-	var pid C.pid_t
-	pidSize := unsafe.Sizeof(pid)
-	cpidsSize := pidSize * 1024 * 2
-	cpids := C.malloc(C.size_t(cpidsSize))
-	defer C.free(cpids)
+func (p *darwinProcess) Pid() int {
+	return p.pid
+}
 
-	bytesUsed, err := C.proc_listpids(C.PROC_ALL_PIDS, 0, cpids, C.int(cpidsSize))
+func (p *darwinProcess) Name() (string, error, []error) {
+	return p.binary, nil, nil
+}
+
+func (p *darwinProcess) Info() (ProcessInfo, error) {
+	return &darwinProcessInfo{}, nil
+}
+
+func processFromPid(pid int) (Process, error, []error) {
+	ps, err, softerrors := getAllProcesses()
 	if err != nil {
-		return nil, err, nil
+		return nil, err, softerrors
 	}
 
-	numberOfPids := uintptr(bytesUsed) / pidSize
-	pids = make([]int, 0, numberOfPids)
-	cpidsSlice := *(*[]C.pid_t)(unsafe.Pointer(
-		&reflect.SliceHeader{
-			Data: uintptr(unsafe.Pointer(cpids)),
-			Len:  int(numberOfPids),
-			Cap:  int(numberOfPids)}))
+	for _, p := range ps {
+		if p.Pid() == pid {
+			return p, nil, softerrors
+		}
+	}
 
-	for i, _ := range cpidsSlice {
-		if cpidsSlice[i] == 0 {
-			continue
+	return nil, nil, softerrors
+}
+
+func getAllProcesses() ([]Process, error, []error) {
+	buf, err := darwinSyscall()
+	if err != nil {
+		return nil, errors.Wrapf(err, "Unable to get all processes on darwin"), nil
+	}
+
+	procs := make([]*kinfoProc, 0, 50)
+	k := 0
+	for i := _KINFO_STRUCT_SIZE; i < buf.Len(); i += _KINFO_STRUCT_SIZE {
+		proc := &kinfoProc{}
+		err = binary.Read(bytes.NewBuffer(buf.Bytes()[k:i]), binary.LittleEndian, proc)
+		if err != nil {
+			return nil, errors.Wrapf(err, "Unable to read process info from darwin syscall"), nil
 		}
 
-		pids = append(pids, int(cpidsSlice[i]))
+		k = i
+		procs = append(procs, proc)
 	}
 
-	return pids, nil, nil
+	darwinProcs := make([]Process, len(procs))
+	for i, p := range procs {
+		darwinProcs[i] = &darwinProcess{
+			pid:    int(p.Pid),
+			ppid:   int(p.PPid),
+			binary: darwinCstring(p.Comm),
+		}
+	}
+
+	return darwinProcs, nil, nil
+}
+
+func darwinCstring(s [16]byte) string {
+	i := 0
+	for _, b := range s {
+		if b != 0 {
+			i++
+		} else {
+			break
+		}
+	}
+
+	return string(s[:i])
+}
+
+func darwinSyscall() (*bytes.Buffer, error) {
+	mib := [4]int32{_CTRL_KERN, _KERN_PROC, _KERN_PROC_ALL, 0}
+	size := uintptr(0)
+
+	_, _, errno := syscall.Syscall6(
+		syscall.SYS___SYSCTL,
+		uintptr(unsafe.Pointer(&mib[0])),
+		4,
+		0,
+		uintptr(unsafe.Pointer(&size)),
+		0,
+		0)
+
+	if errno != 0 {
+		return nil, errno
+	}
+
+	bs := make([]byte, size)
+	_, _, errno = syscall.Syscall6(
+		syscall.SYS___SYSCTL,
+		uintptr(unsafe.Pointer(&mib[0])),
+		4,
+		uintptr(unsafe.Pointer(&bs[0])),
+		uintptr(unsafe.Pointer(&size)),
+		0,
+		0)
+
+	if errno != 0 {
+		return nil, errno
+	}
+
+	return bytes.NewBuffer(bs[0:size]), nil
+}
+
+const (
+	_CTRL_KERN         = 1
+	_KERN_PROC         = 14
+	_KERN_PROC_ALL     = 0
+	_KINFO_STRUCT_SIZE = 648
+)
+
+type kinfoProc struct {
+	_    [40]byte
+	Pid  int32
+	_    [199]byte
+	Comm [16]byte
+	_    [301]byte
+	PPid int32
+	_    [84]byte
 }
