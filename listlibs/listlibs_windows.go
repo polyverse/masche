@@ -1,7 +1,7 @@
 package listlibs
 
 import (
-	"fmt"
+	"github.com/pkg/errors"
 	"reflect"
 	"unsafe"
 
@@ -18,7 +18,7 @@ func listLoadedLibraries(p process.Process) (libraries []string, harderror error
 	r := C.getModules(C.process_handle_t(p.Handle()))
 	defer C.EnumProcessModulesResponse_Free(r)
 	if r.error != 0 {
-		return nil, fmt.Errorf("getModules failed with error: %d", r.error), nil
+		return nil, errors.Wrapf(r.error, "getModules failed with error"), nil
 	}
 	mods := make([]string, r.length)
 	// We use this to access C arrays without doing manual pointer arithmetic.

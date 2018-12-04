@@ -48,7 +48,7 @@ func logErrors(harderror error, softerrors []error) {
 func main() {
 	flag.Parse()
 
-	proc, harderror, softerrors := process.OpenFromPid(uint(*pid))
+	proc, harderror, softerrors := process.ProcessFromPid(int(*pid))
 	logErrors(harderror, softerrors)
 
 	switch *action {

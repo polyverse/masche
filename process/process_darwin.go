@@ -1,11 +1,6 @@
 package process
 
-// #cgo CFLAGS: -std=c99
-// #include <libproc.h>
-// #include <errno.h>
-// #include <stdlib.h>
 import "C"
-
 import (
 	"fmt"
 	"path/filepath"

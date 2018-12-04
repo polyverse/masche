@@ -15,7 +15,7 @@ import (
 
 var rstr = flag.String("r", "", "library name regexp")
 
-func main() {
+func main_listlibs() {
 	flag.Parse()
 
 	r, err := regexp.Compile(*rstr)
@@ -23,11 +23,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	ps, hard, softs := process.OpenAll()
+	ps, hard, softs := process.GetAllProcesses()
 	if hard != nil {
 		log.Fatal(hard)
 	}
-	defer process.CloseAll(ps)
 	for _, e := range softs {
 		log.Println(e)
 	}

@@ -5,8 +5,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
-	"os"
 	"path/filepath"
 	"reflect"
 	"strconv"
@@ -14,7 +12,7 @@ import (
 	"sync"
 )
 
-type LinuxProcessInfo struct {
+type linuxProcessInfo struct {
 	Id              int    `json:"id" statusFileKey:"Pid"`
 	Command         string `json:"command" statusFileKey:"Name"`
 	UserId          int    `json:"userId" statusFileKey:"Uid"`
@@ -26,40 +24,12 @@ type LinuxProcessInfo struct {
 }
 
 var (
-	tmpLpi         = LinuxProcessInfo{}
+	tmpLpi         = linuxProcessInfo{}
 	keyToFieldName = map[string]string{}
 	mtx            = &sync.RWMutex{}
 )
 
-func ProcessInfo(pid int) (*LinuxProcessInfo, error) {
-	statusPath := filepath.Join("/proc", fmt.Sprintf("%d", pid), "status")
-	statusFile, err := os.Open(statusPath)
-	if err != nil {
-		return nil, fmt.Errorf("Unable to open proc %d's status file at %s (%v)", pid, statusPath, err)
-	}
-	defer statusFile.Close()
-
-	data, err := ioutil.ReadAll(statusFile)
-	if err != nil {
-		return nil, fmt.Errorf("Unable to read data from proc %d's status file at %s (%v)", pid, statusPath, err)
-	}
-
-	lpi := &LinuxProcessInfo{}
-	err = parseStatusToStruct(data, lpi)
-	if err != nil {
-		return nil, fmt.Errorf("Unable to process data from %s into LinuxProcessInfo struct (%v)", statusPath, err)
-	}
-
-	//we ignore this error
-	lpi.Executable, err = ProcessExe(pid)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "[Warning] Error when expanding symlink to executable: %v\n", err)
-	}
-
-	return lpi, err
-}
-
-func ProcessExe(pid int) (string, error) {
+func processExe(pid int) (string, error) {
 	exePath := filepath.Join("/proc", fmt.Sprintf("%d", pid), "exe")
 	name, err := filepath.EvalSymlinks(exePath)
 	if err != nil {
@@ -68,7 +38,7 @@ func ProcessExe(pid int) (string, error) {
 	return name, nil
 }
 
-func parseStatusToStruct(data []byte, lpi *LinuxProcessInfo) error {
+func parseStatusToStruct(data []byte, lpi *linuxProcessInfo) error {
 	if lpi == nil {
 		return fmt.Errorf("Cannot parse Process Status into a nil LinuxProcessInfo")
 	}
@@ -147,15 +117,4 @@ func getFieldNameForKey(key string) string {
 	defer mtx.Unlock()
 	keyToFieldName[key] = fieldForKey.Name
 	return keyToFieldName[key]
-}
-
-func appendError(errs []error, err error, format string, params ...interface{}) []error {
-	if err == nil {
-		return errs
-	}
-
-	params = append(params, err)
-	wrappedErr := fmt.Errorf(format+" (%v)", params...)
-	errs = append(errs, wrappedErr)
-	return errs
 }

@@ -1,11 +1,7 @@
 package listlibs
 
-// #cgo CFLAGS: -std=c99
-// #include "listlibs_darwin.h"
 import "C"
-
 import (
-	"github.com/polyverse/masche/cresponse"
 	"github.com/polyverse/masche/process"
 	"reflect"
 	"unsafe"

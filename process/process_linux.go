@@ -12,14 +12,14 @@ import (
 	"strings"
 )
 
-type LinuxProcess int
+type linuxProcess int
 
-func (p LinuxProcess) Pid() int {
+func (p linuxProcess) Pid() int {
 	return int(p)
 }
 
-func (p LinuxProcess) Name() (name string, harderror error, softerrors []error) {
-	name, err := ProcessExe(p.Pid())
+func (p linuxProcess) Name() (name string, harderror error, softerrors []error) {
+	name, err := processExe(p.Pid())
 
 	if err != nil {
 		// If the exe link doesn't take us to the real path of the binary of the process maybe it's not present anymore
@@ -54,12 +54,40 @@ func (p LinuxProcess) Name() (name string, harderror error, softerrors []error) 
 	return name, err, nil
 }
 
-func (p LinuxProcess) Close() (harderror error, softerrors []error) {
+func (p linuxProcess) Close() (harderror error, softerrors []error) {
 	return nil, nil
 }
 
-func (p LinuxProcess) Handle() uintptr {
+func (p linuxProcess) Handle() uintptr {
 	return uintptr(p)
+}
+
+func (p linuxProcess) Info() (ProcessInfo, error) {
+	statusPath := filepath.Join("/proc", fmt.Sprintf("%d", p), "status")
+	statusFile, err := os.Open(statusPath)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to open proc %d's status file at %s (%v)", p.Pid(), statusPath, err)
+	}
+	defer statusFile.Close()
+
+	data, err := ioutil.ReadAll(statusFile)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to read data from proc %d's status file at %s (%v)", p.Pid(), statusPath, err)
+	}
+
+	lpi := &linuxProcessInfo{}
+	err = parseStatusToStruct(data, lpi)
+	if err != nil {
+		return nil, fmt.Errorf("Unable to process data from %s into LinuxProcessInfo struct (%v)", statusPath, err)
+	}
+
+	//we ignore this error
+	lpi.Executable, err = processExe(p.Pid())
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "[Warning] Error when expanding symlink to executable: %v\n", err)
+	}
+
+	return lpi, err
 }
 
 func getAllPids() (pids []int, harderror error, softerrors []error) {
@@ -81,15 +109,13 @@ func getAllPids() (pids []int, harderror error, softerrors []error) {
 	return pids, nil, nil
 }
 
-func openFromPid(pid int) (p Process, harderror error, softerrors []error) {
+func processFromPid(pid int) (Process, error, []error) {
 	// Check if we have premissions to read the process memory
-	memPath := common.MemFilePathFromPid(uint(pid))
-	memFile, err := os.Open(memPath)
+	procPath := common.ProcPathFromPid(uint(pid))
+	_, err := os.Stat(procPath)
 	if err != nil {
-		harderror = fmt.Errorf("Permission denied to access memory of process %v", pid)
-		return
+		return nil, fmt.Errorf("Error when testing existence of process with pid %v", pid), nil
 	}
-	defer memFile.Close()
 
-	return LinuxProcess(pid), nil, nil
+	return linuxProcess(pid), nil, nil
 }

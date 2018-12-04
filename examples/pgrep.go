@@ -12,7 +12,7 @@ import (
 
 var reg = flag.String("r", ".*", "Regular Expression to use.")
 
-func main() {
+func main_pgrep() {
 	flag.Parse()
 
 	r, err := regexp.Compile(*reg)
@@ -20,7 +20,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	ps, hard, soft := process.OpenByName(r)
+	ps, hard, soft := process.ProcessesByName(r)
 	if hard != nil {
 		log.Fatal(err)
 	}

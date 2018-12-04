@@ -16,88 +16,48 @@ type Process interface {
 	Pid() int
 
 	// Name returns the process' binary full path.
-	Name() (name string, harderror error, softerrors []error)
+	Name() (string, error, []error)
 
-	// Closes this Process.
-	Close() (harderror error, softerrors []error)
-
-	// Handle returns an opaque value which's meaning dependes on the OS-specific implementation of it.
-	// It works like an interface{} that you must cast, but we are using a uintptr because we need to return C values,
-	// and casting between them in different modules panics if you use interface{}.
-	Handle() uintptr
+	// Info
+	Info() (ProcessInfo, error)
 }
 
 // OpenFromPid opens a process by its pid.
-func OpenFromPid(pid int) (p Process, harderror error, softerrors []error) {
+func ProcessFromPid(pid int) (Process, error, []error) {
 	// This function is implemented by the OS-specific openFromPid function.
-	return openFromPid(pid)
+	return processFromPid(pid)
 }
 
 // GetAllPids returns a slice with al the running processes' pids.
-func GetAllPids() (pids []int, harderror error, softerrors []error) {
-	// This function is implemented by the OS-specific getAllPids function.
-	allPids, harderror, softerrors := getAllPids()
-	if harderror != nil {
-		return nil, harderror, softerrors
-	} // if
+func GetAllProcesses() ([]Process, error, []error) {
+	softerrors := []error{}
 
+	// This function is implemented by the OS-specific getAllPids function.
+	allPids, harderror1, softerrors1 := getAllPids()
+	softerrors = append(softerrors, softerrors1...)
+	if harderror1 != nil {
+		return nil, harderror1, softerrors
+	} // if
 	sort.Ints(allPids)
 
-	return allPids, harderror, softerrors
+	procs := []Process{}
+	for _, pid := range allPids {
+		proc, harderr2, softerrors2 := ProcessFromPid(pid)
+		softerrors = append(softerrors, softerrors2...)
+		softerrors = append(softerrors,
+			fmt.Errorf("Error occurred when getting Process from Pid %d: %v", pid, harderr2))
 
-}
-
-// OpenAll opens all the running processes returning a slice of Process.
-// A race condition may make this generate some softerrors because from the time pids are get to actually opened some
-// of them may have dead.
-func OpenAll() (ps []Process, harderror error, softerrors []error) {
-	pids, err, softs := GetAllPids()
-	softerrs := make([]error, 0)
-	if softs != nil {
-		softerrs = append(softerrs, softs...)
-	}
-	if err != nil {
-		return nil, err, softerrs
+		procs = append(procs, proc)
 	}
 
-	ps = make([]Process, 0)
-	for _, pid := range pids {
-		p, err, softs := OpenFromPid(pid)
-		if err != nil {
-			softerrs = append(softerrs, fmt.Errorf("Pid: %d failed to Open. Error: %v", pid, err))
-			continue
-		}
-		if softs != nil {
-			softerrs = append(softerrs, softs...)
-		}
-		ps = append(ps, p)
-	}
-	return ps, nil, softerrs
-}
-
-// CloseAll closes all the processes from the given slice.
-func CloseAll(ps []Process) (harderrors []error, softerrors []error) {
-	harderrors = make([]error, 0)
-	softerrors = make([]error, 0)
-
-	for _, p := range ps {
-		hard, soft := p.Close()
-		if hard != nil {
-			harderrors = append(harderrors, hard)
-		}
-		if soft != nil {
-			softerrors = append(softerrors, soft...)
-		}
-	}
-
-	return harderrors, softerrors
+	return procs, nil, softerrors
 }
 
 // OpenByName recieves a Regexp an returns a slice with all the Processes whose name matches it.
-func OpenByName(r *regexp.Regexp) (ps []Process, harderror error, softerrors []error) {
-	procs, harderror, softerrors := OpenAll()
+func ProcessesByName(r *regexp.Regexp) (ps []Process, harderror error, softerrors []error) {
+	procs, harderror, softerrors := GetAllProcesses()
 	if harderror != nil {
-		return nil, harderror, nil
+		return nil, fmt.Errorf("", harderror), nil
 	}
 
 	matchs := make([]Process, 0)
@@ -113,8 +73,6 @@ func OpenByName(r *regexp.Regexp) (ps []Process, harderror error, softerrors []e
 
 		if r.MatchString(name) {
 			matchs = append(matchs, p)
-		} else {
-			p.Close()
 		}
 	}
 

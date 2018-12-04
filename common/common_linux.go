@@ -7,12 +7,16 @@ import (
 	"strings"
 )
 
+func ProcPathFromPid(pid uint) string {
+	return filepath.Join("/proc", fmt.Sprintf("%d", pid))
+}
+
 func MapsFilePathFromPid(pid uint) string {
-	return filepath.Join("/proc", fmt.Sprintf("%d", pid), "maps")
+	return filepath.Join(ProcPathFromPid(pid), "maps")
 }
 
 func MemFilePathFromPid(pid uint) string {
-	return filepath.Join("/proc", fmt.Sprintf("%d", pid), "mem")
+	return filepath.Join(ProcPathFromPid(pid), "mem")
 }
 
 //Parses the memory limits of a mapping as found in /proc/PID/maps
