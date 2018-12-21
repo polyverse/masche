@@ -1,6 +1,5 @@
 package process
 
-import "C"
 import (
 	"bytes"
 	"encoding/binary"
@@ -25,6 +24,9 @@ func (p *darwinProcess) Name() (string, error, []error) {
 
 func (p *darwinProcess) Info() (ProcessInfo, error) {
 	return &darwinProcessInfo{}, nil
+}
+
+type darwinProcessInfo struct {
 }
 
 func processFromPid(pid int) (Process, error, []error) {
@@ -56,7 +58,6 @@ func getAllProcesses() ([]Process, error, []error) {
 		if err != nil {
 			return nil, errors.Wrapf(err, "Unable to read process info from darwin syscall"), nil
 		}
-
 		k = i
 		procs = append(procs, proc)
 	}

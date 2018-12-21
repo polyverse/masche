@@ -45,6 +45,9 @@ type windowsProcess struct {
 	exe  string
 }
 
+type windowsProcessInfo struct {
+}
+
 func (p *windowsProcess) Pid() int {
 	return p.pid
 }
