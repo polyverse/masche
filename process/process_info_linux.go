@@ -14,24 +14,13 @@ import (
 	"sync"
 )
 
-type LinuxProcessInfo struct {
-	Id              int    `json:"id" statusFileKey:"Pid"`
-	Command         string `json:"command" statusFileKey:"Name"`
-	UserId          int    `json:"userId" statusFileKey:"Uid"`
-	UserName        string `json:"userName" statusFileKey:""`
-	GroupId         int    `json:"groupId" statusFileKey:"Gid"`
-	GroupName       string `json:"groupName" statusFileKey:""`
-	ParentProcessId int    `json:"parentProcessId" statusFileKey:"PPid"`
-	Executable      string `json:"executable"`
-}
-
 var (
 	tmpLpi         = LinuxProcessInfo{}
 	keyToFieldName = map[string]string{}
 	mtx            = &sync.RWMutex{}
 )
 
-func ProcessInfo(pid int) (*LinuxProcessInfo, error) {
+func processInfo(pid int) (*LinuxProcessInfo, error) {
 	statusPath := filepath.Join("/proc", fmt.Sprintf("%d", pid), "status")
 	statusFile, err := os.Open(statusPath)
 	if err != nil {
@@ -59,7 +48,7 @@ func ProcessInfo(pid int) (*LinuxProcessInfo, error) {
 	return lpi, err
 }
 
-func ProcessExe(pid int) (string, error) {
+func processExe(pid int) (string, error) {
 	exePath := filepath.Join("/proc", fmt.Sprintf("%d", pid), "exe")
 	name, err := filepath.EvalSymlinks(exePath)
 	if err != nil {
