@@ -8,13 +8,8 @@ package process
 import "C"
 
 import (
-	"bufio"
 	"fmt"
-	"io"
-	"os"
-	"path/filepath"
 	"reflect"
-	"strings"
 	"unsafe"
 
 	"github.com/polyverse/masche/cresponse"
