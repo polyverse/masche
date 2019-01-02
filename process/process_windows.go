@@ -8,8 +8,13 @@ package process
 import "C"
 
 import (
+	"bufio"
 	"fmt"
+	"io"
+	"os"
+	"path/filepath"
 	"reflect"
+	"strings"
 	"unsafe"
 
 	"github.com/polyverse/masche/cresponse"
@@ -52,4 +57,23 @@ func getAllPids() (pids []int, harderror error, softerrors []error) {
 	}
 
 	return pids, nil, nil
+}
+
+type LinuxProcess int
+
+func (p LinuxProcess) Pid() int {
+	return int(p)
+}
+
+func (p LinuxProcess) Name() (name string, harderror error, softerrors []error) {
+	name, err := ProcessExe(p.Pid())
+	return name, err, nil
+}
+
+func (p LinuxProcess) Close() (harderror error, softerrors []error) {
+	return nil, nil
+}
+
+func (p LinuxProcess) Handle() uintptr {
+	return uintptr(p)
 }
