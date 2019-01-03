@@ -13,6 +13,7 @@ import (
 	"os/exec"
 	"reflect"
 	"strconv"
+	"syscall"
 	"unsafe"
 
 	"github.com/polyverse/masche/cresponse"
@@ -73,16 +74,9 @@ func (p LinuxProcess) Close() (harderror error, softerrors []error) {
 }
 
 func (p LinuxProcess) Handle() uintptr {
-	wmicCommand := exec.Command("wmic", "path", "win32_process", "where", "processid=" +
-		strconv.FormatUint(uint64(p), 10), "get", "handle")
-	wmicOutput, err := wmicCommand.Output()
-	if err != nil {
-		return 0    // Can't return a negative since it's unsigned. Can't return an error. Not sure what to do here
-					// besides panic or pretend nothing is wrong.
-	}
-	wmicLines := bytes.Split(wmicOutput, []byte("\n"))
-	processLine := wmicLines[1]
-	handleString := string(processLine)
-	handle, _ := strconv.ParseUint(handleString, 10, 64)
-	return uintptr(handle)
+	// https://gist.github.com/castaneai/ed8cc2aaedf9d1eafd68
+	kernel32 := syscall.MustLoadDLL("kernel32.dll")
+	proc := kernel32.MustFindProc("OpenProcess")
+	handle, _, _ := proc.Call(0x1F0FFF, 0, uintptr(p))
+	return handle
 }

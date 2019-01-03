@@ -79,8 +79,8 @@ func userName(pid int) (string, error) {
 	for index, line := range lines {
 		if bytes.Equal(line[:10], []byte("Image Name")) {
 			headingLine = line
-			processLine = lines[index - 2]
-			separatorLineTokens = bytes.Split(lines[index - 1], []byte(" "))
+			processLine = lines[index + 2]
+			separatorLineTokens = bytes.Split(lines[index + 1], []byte(" "))
 			break
 		}
 	}
