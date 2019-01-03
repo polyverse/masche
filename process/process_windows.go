@@ -8,11 +8,8 @@ package process
 import "C"
 
 import (
-	"bytes"
 	"fmt"
-	"os/exec"
 	"reflect"
-	"strconv"
 	"syscall"
 	"unsafe"
 
