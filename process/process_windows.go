@@ -73,8 +73,8 @@ func (p LinuxProcess) Close() (harderror error, softerrors []error) {
 }
 
 func (p LinuxProcess) Handle() uintptr {
-	wmicCommand := exec.Command("wmic", "path", "win32_process", "where", "processid=" + string(p),
-		"get", "handle")
+	wmicCommand := exec.Command("wmic", "path", "win32_process", "where", "processid=" +
+		strconv.FormatUint(uint64(p), 10), "get", "handle")
 	wmicOutput, err := wmicCommand.Output()
 	if err != nil {
 		return 0    // Can't return a negative since it's unsigned. Can't return an error. Not sure what to do here
