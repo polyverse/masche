@@ -77,7 +77,7 @@ func userName(pid int) (string, error) {
 	var processLine []byte
 	var separatorLineTokens [][]byte
 	for index, line := range lines {
-		if bytes.Equal(line[:10], []byte("Image Name")) {
+		if len(line) >= 10 && bytes.Equal(line[:10], []byte("Image Name")) {
 			headingLine = line
 			processLine = lines[index + 2]
 			separatorLineTokens = bytes.Split(lines[index + 1], []byte(" "))
