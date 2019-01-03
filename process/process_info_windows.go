@@ -27,7 +27,7 @@ func processExe(pid int) (string, error) {
 }
 
 func commandExecutableAndPPId(pid int) (string, string, int, error) {
-	wmicCommand := exec.Command("wmic", "path", "win32_process", "where", "handle=" + string(pid),
+	wmicCommand := exec.Command("wmic", "path", "win32_process", "where", "processid=" + string(pid),
 		"get", "commandline,", "executablepath,", "parentprocessid")
 	wmicOutput, err := wmicCommand.Output()
 	if err != nil {

@@ -8,8 +8,11 @@ package process
 import "C"
 
 import (
+	"bytes"
 	"fmt"
+	"os/exec"
 	"reflect"
+	"strconv"
 	"unsafe"
 
 	"github.com/polyverse/masche/cresponse"
@@ -70,5 +73,16 @@ func (p LinuxProcess) Close() (harderror error, softerrors []error) {
 }
 
 func (p LinuxProcess) Handle() uintptr {
-	return uintptr(p)
+	wmicCommand := exec.Command("wmic", "path", "win32_process", "where", "processid=" + string(p),
+		"get", "handle")
+	wmicOutput, err := wmicCommand.Output()
+	if err != nil {
+		return 0    // Can't return a negative since it's unsigned. Can't return an error. Not sure what to do here
+					// besides panic or pretend nothing is wrong.
+	}
+	wmicLines := bytes.Split(wmicOutput, []byte("\n"))
+	processLine := wmicLines[1]
+	handleString := string(processLine)
+	handle, _ := strconv.ParseUint(handleString, 10, 64)
+	return uintptr(handle)
 }
