@@ -2,6 +2,7 @@ package process
 
 import (
 	"bytes"
+	"errors"
 	"os/exec"
 	"strconv"
 )
@@ -41,6 +42,9 @@ func commandExecutableAndPPId(pid int) (string, string, int, error) {
 	charIndex := 0
 	var executableIndex int
 	for ; charIndex < len(headingLine); charIndex++ {
+		if len(headingLine) < charIndex + 14 {
+			return "", "", 0, errors.New("ExecutablePath column missing in WMIC output")
+		}
 		if bytes.Equal(headingLine[charIndex:charIndex + 14], []byte("ExecutablePath")) {
 			executableIndex = charIndex
 			charIndex += 14
@@ -49,6 +53,9 @@ func commandExecutableAndPPId(pid int) (string, string, int, error) {
 	}
 	var pPIdIndex int
 	for ; charIndex < len(headingLine); charIndex++ {
+		if len(headingLine) < charIndex + 15 {
+			return "", "", 0, errors.New("ParentProcessId column missing in WMIC output")
+		}
 		if bytes.Equal(headingLine[charIndex:charIndex + 15], []byte("ParentProcessId")) {
 			pPIdIndex = charIndex
 			break
