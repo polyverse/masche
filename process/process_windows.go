@@ -10,6 +10,7 @@ import "C"
 import (
 	"fmt"
 	"reflect"
+	"syscall"
 	"unsafe"
 
 	"github.com/polyverse/masche/cresponse"
@@ -52,4 +53,27 @@ func getAllPids() (pids []int, harderror error, softerrors []error) {
 	}
 
 	return pids, nil, nil
+}
+
+type LinuxProcess int
+
+func (p LinuxProcess) Pid() int {
+	return int(p)
+}
+
+func (p LinuxProcess) Name() (name string, harderror error, softerrors []error) {
+	name, err := ProcessExe(p.Pid())
+	return name, err, nil
+}
+
+func (p LinuxProcess) Close() (harderror error, softerrors []error) {
+	return nil, nil
+}
+
+func (p LinuxProcess) Handle() uintptr {
+	// https://gist.github.com/castaneai/ed8cc2aaedf9d1eafd68
+	kernel32 := syscall.MustLoadDLL("kernel32.dll")
+	proc := kernel32.MustFindProc("OpenProcess")
+	handle, _, _ := proc.Call(0x1F0FFF, 0, uintptr(p))
+	return handle
 }

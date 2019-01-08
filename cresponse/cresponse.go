@@ -20,7 +20,7 @@ func (err CError) Error() string {
 	return fmt.Sprintf("System error number %d: %s", err.number, err.description)
 }
 
-// GetGetResponsesErrors returns the Go representation of the errors present in a C.reponse_t.
+// GetResponsesErrors returns the Go representation of the errors present in a C.reponse_t.
 //
 // NOTE: cgo types are private to each module, so exporting a function that expects a *C.response_t doesn't make sense,
 // so we export a function with an unsafe.Pointer and we cast it internally.
