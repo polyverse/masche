@@ -50,7 +50,7 @@ func processInfo(pid int) (windowsProcessInfo, error) {
 }
 
 func processExe(pid int) (string, error) {
-	_, executable, _, err := commandExecutableAndPPId(pid)
+	_, executable, _, _, _, err := commandExecutablePPIdPPIdHandleAndSessionId(pid)
 	return executable, err
 }
 
