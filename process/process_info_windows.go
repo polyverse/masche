@@ -86,13 +86,13 @@ func commandExecutablePPIdPPIdHandleAndSessionId(pid int) (string, string, int, 
 	}
 
 	command := string(bytes.TrimSpace(processLine[:executableIndex]))
-	executable := string(bytes.TrimSpace(processLine[executableIndex:pPIdIndex]))
-	handleString := string(bytes.TrimSpace(processLine[handleIndex:sessionIdIndex]))
+	executable := string(bytes.TrimSpace(processLine[executableIndex:handleIndex]))
+	handleString := string(bytes.TrimSpace(processLine[handleIndex:pPIdIndex]))
 	handle, err := strconv.ParseInt(handleString, 10, 64)
 	if err != nil {
 		handle = -1
 	}
-	pPIdString := string(bytes.TrimSpace(processLine[pPIdIndex:handleIndex]))
+	pPIdString := string(bytes.TrimSpace(processLine[pPIdIndex:sessionIdIndex]))
 	pPId, err := strconv.ParseInt(pPIdString, 10, 64)
 	if err != nil {
 		pPId = -1
